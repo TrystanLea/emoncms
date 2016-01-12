@@ -13,32 +13,54 @@
     */
 
     //CHAVEIRO TODO: only used in vis_main_view.php, should be php source for vis/widget/vis_render.js vis_widgetlist variable data
-
-    $visualisations = array(
+    $visualisations = array();
     
-        'realtime' => array('label'=>_("RealTime"), 'options'=>array(
-            array('feedid',_("feed"),1))
-        ),
-        
-        // Hex colour EDC240 is the default color for flot. since we want existing setups to not change, we set the default value to it manually now,
-        'rawdata'=> array('label'=>_("RawData"), 'options'=>array(
-            array('feedid',_("feed"),1),
-            array('fill',_("fill"),7,0),
-            array('colour',_("colour"),5,'EDC240'),
-            array('units',_("units"),5,''),
-            array('dp',_("dp"),7,'2'),
-            array('scale',_("scale"),6,'1'))
-        ),
-        
-        'bargraph'=> array('label'=>_("BarGraph"), 'options'=>array(
-            array('feedid',_("feed"),0),
-            array('colour',_("colour"),5,'EDC240'),
-            array('interval',_("interval"),7,'86400'),
-            array('units',_("units"),5,''),
-            array('dp',_("dp"),7,'1'),
-            array('scale',_("scale"),6,'1'),
-            array('delta',_("delta"),7,'0'))
-        ),
+    $visualisations['realtime'] = array(
+        'label'=>_("RealTime"),
+        'location'=>"Modules/vis/visualisations/realtime.php",
+        'options'=>array(
+            'feedid'=>array("name"=>_("feed"), "type"=>"feed", "default"=>"")
+        )
+    );
+    
+    $visualisations['rawdata'] = array(
+        'label'=>_("RawData"),
+        'location'=>"Modules/vis/visualisations/rawdata.php",
+        'options'=>array(
+            'feedid'=>array("name"=>_("feed"), "type"=>"feed", "default"=>""),
+            'fill'=>array("name"=>_("fill"), "type"=>"int", "default"=>"0"),
+            // Hex colour EDC240 is the default color for flot. since we want existing setups to not change, we set the default value to it manually now,
+            'colour'=>array("name"=>_("colour"), "type"=>"text", "default"=>"EDC240"),
+            'units'=>array("name"=>_("units"), "type"=>"text", "default"=>""),
+            'dp'=>array("name"=>_("dp"), "type"=>"int", "default"=>"2"),
+            'scale'=>array("name"=>_("scale"), "type"=>"float", "default"=>"1")
+        )
+    );
+    
+    $visualisations['bargraph'] = array(
+        'label'=>_("BarGraph"),
+        'location'=>"Modules/vis/visualisations/bargraph.php",
+        'options'=>array(
+            'feedid'=>array("name"=>_("feed"), "type"=>"feed", "default"=>""),
+            'colour'=>array("name"=>_("colour"), "type"=>"text", "default"=>"EDC240"),
+            'interval'=>array("name"=>_("interval"), "type"=>"int", "default"=>"86400"),
+            'units'=>array("name"=>_("units"), "type"=>"text", "default"=>""),
+            'dp'=>array("name"=>_("dp"), "type"=>"int", "default"=>"2"),
+            'scale'=>array("name"=>_("scale"), "type"=>"float", "default"=>"1"),
+            'delta'=>array("name"=>_("delta"), "type"=>"int", "default"=>"0")
+        )
+    );
+
+    $visualisations['graph'] = array(
+        'label'=>_("Graph"),
+        'location'=>"Modules/vis/visualisations/graph.php", 
+        'options'=>array(
+            'feedid'=>array("name"=>_("feed"), "type"=>"feed", "default"=>"")
+         )
+    );
+    
+    /*
+    $visualisations = array(
         
         'timestoredaily'=> array('label'=>_("Daily from Multiple (BETA)"), 'options'=>array(
             array('feedid',_("feed"),1),
@@ -48,13 +70,6 @@
         'smoothie'=> array('label'=>_("Smoothie"), 'options'=>array(
             array('feedid',_("feed"),1),
             array('ufac',_("ufac"),6))
-        ),
-        
-        'histgraph'=> array('label'=>_("Histgraph"), 'options'=>array(
-            array('feedid',_("feed"),3),
-            array('barwidth',_("barwidth"),7,50),
-            array('start',_("start"),7,0),
-            array('end',_("end"),7,0))
         ),
         
         //'dailyhistogram'=> array('options'=>array(array('feedid',3))),
@@ -116,13 +131,9 @@
             array('feedB',_("Feed B"),1)
         )),
         
-        'graph'=> array('label'=>_("Graph (BETA)"), 'options'=>array(
-            array('feedid',_("feed"),1)
-        )),
-        
         'timecompare'=> array('label'=>_("Time Comparison"), 'options'=>array(
             array('feedid',_("feed"),1),
             array('fill',_("fill"),7,1),
             array('depth',_("depth"),7,3)
         ))
-    );
+    );*/

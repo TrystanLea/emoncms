@@ -25,7 +25,18 @@
     $visdir = "vis/visualisations/";
 
     require "Modules/vis/vis_object.php";
-
+    
+    // Scan for visualisations not present in the standard pack
+    $dir = scandir("Modules");
+    for ($i=2; $i<count($dir); $i++) {
+        $modname = $dir[$i];
+        if ($modname!="vis" && filetype("Modules/$modname")=='dir') {
+            if (is_file("Modules/$modname/vis_object.php")) {
+                require "Modules/$modname/vis_object.php";
+            }
+        }
+    }
+    
     $write_apikey = ""; $read_apikey = "";
     if ($session['read']) $read_apikey = $user->get_apikey_read($session['userid']);
     if ($session['write']) $write_apikey = $user->get_apikey_write($session['userid']);
@@ -51,77 +62,71 @@
             if ($datatype == 3) $route->action = 'histgraph';
         }
 
-        while ($vis = current($visualisations))
+        if (isset($visualisations[$route->action])) 
         {
-            $viskey = key($visualisations);
+            $viskey = $route->action;
+            $vis = $visualisations[$viskey];
+            $location = $visualisations[$viskey]['location'];
+            
+            $array = array();
+            $array['valid'] = true;
 
-            // If the visualisation has a set property called action
-            // then override the visualisation key and use the set action instead
-            if (isset($vis['action'])) $viskey = $vis['action'];
-
-            if ($route->action == $viskey)
+            if (isset($vis['options']))
             {
-                $array = array();
-                $array['valid'] = true;
-
-                if (isset($vis['options']))
+                foreach ($vis['options'] as $key=>$option)
                 {
-                    foreach ($vis['options'] as $option)
-                    {
-                        $key = $option[0]; $type = $option[2];
-                        if (isset($option[3])) $default = $option[3]; else $default = "";
+                    $type = $option['type'];
+                    $default = $option['default'];
 
-                        if ($type==0 || $type==1 || $type==2 || $type==3) {
-                            $feedid = (int) get($key);
-                            if ($feedid) {
-                              $f = $feed->get($feedid);
-                              $array[$key] = $feedid;
-                              $array[$key.'name'] = $f['name'];
+                    if ($type=="feed") {
+                        $feedid = (int) get($key);
+                        if ($feedid) {
+                          $f = $feed->get($feedid);
+                          $array[$key] = $feedid;
+                          $array[$key.'name'] = $f['name'];
 
-                              if ($f['userid']!=$session['userid']) $array['valid'] = false;
-                              if ($f['public']) $array['valid'] = true;
-                            } else {
-                              $array['valid'] = false;
-                            }
+                          if ($f['userid']!=$session['userid']) $array['valid'] = false;
+                          if ($f['public']) $array['valid'] = true;
+                        } else {
+                          $array['valid'] = false;
                         }
-                        else if ($type==4)
-                            // Boolean not used at the moment
-                            if (get($key)==true || get($key)==false)
-                                $array[$key] = get($key); else $array[$key] = $default;
-                        else if ($type==5)
-                            $array[$key] = preg_replace('/[^\p{L}_\p{N}\s£$€¥]/u','',get($key))?get($key):$default;
-                        else if ($type==6)
-                            $array[$key] = str_replace(',', '.', floatval((get($key)?get($key):$default)));
-                        else if ($type==7)
-                            $array[$key] = intval((get($key)?get($key):$default));
-                        else if ($type==8) {
-                            $mid = (int) get($key);
-                            if ($mid) {
-                              $f = $multigraph->get($mid,$session['userid']);
-                              $array[$key] = intval(($mid?$mid:$default));
-                              if (!isset($f['feedlist'])) $array['valid'] = false;
-                            } else {
-                              $array['valid'] = false;
-                            }
-                        }
-
-                        # we need to either urlescape the colour, or just scrub out invalid chars. I'm doing the second, since
-                        # we can be fairly confident that colours are eiter a hex or a simple word (e.g. "blue" or such)
-                        if ($key == "colour")
-                            $array[$key] = preg_replace('/[^\dA-Za-z]/','',$array[$key]);
                     }
-                }
+                    else if ($type=="bool")
+                        // Boolean not used at the moment
+                        if (get($key)==true || get($key)==false)
+                            $array[$key] = get($key); else $array[$key] = $default;
+                    else if ($type=="text")
+                        $array[$key] = preg_replace('/[^\p{L}_\p{N}\s£$€¥]/u','',get($key))?get($key):$default;
+                    else if ($type=="float")
+                        $array[$key] = str_replace(',', '.', floatval((get($key)?get($key):$default)));
+                    else if ($type=="int")
+                        $array[$key] = intval((get($key)?get($key):$default));
+                    else if ($type=="multigraph") {
+                        $mid = (int) get($key);
+                        if ($mid) {
+                          $f = $multigraph->get($mid,$session['userid']);
+                          $array[$key] = intval(($mid?$mid:$default));
+                          if (!isset($f['feedlist'])) $array['valid'] = false;
+                        } else {
+                          $array['valid'] = false;
+                        }
+                    }
 
-                $array['apikey'] = $read_apikey;
-                $array['write_apikey'] = $write_apikey;
-
-                if ($array['valid'] == false) {
-                    $result .= "<div style='position:absolute; top:0px; left:0px; width:100%; height:100%; display: table;'><div class='alert-error' style='text-align:center; display:table-cell; vertical-align:middle;'><h4>"._('Not configured')."<br>"._('or')."<br>"._('Authentication not valid')."</h4></div></div>";
-                } else {
-                    $result .= view("Modules/".$visdir.$viskey.".php", $array);
+                    # we need to either urlescape the colour, or just scrub out invalid chars. I'm doing the second, since
+                    # we can be fairly confident that colours are eiter a hex or a simple word (e.g. "blue" or such)
+                    if ($key == "colour")
+                        $array[$key] = preg_replace('/[^\dA-Za-z]/','',$array[$key]);
                 }
             }
-            next($visualisations);
+
+            $array['apikey'] = $read_apikey;
+            $array['write_apikey'] = $write_apikey;
+
+            if ($array['valid'] == false) {
+                $result .= "<div style='position:absolute; top:0px; left:0px; width:100%; height:100%; display: table;'><div class='alert-error' style='text-align:center; display:table-cell; vertical-align:middle;'><h4>"._('Not configured')."<br>"._('or')."<br>"._('Authentication not valid')."</h4></div></div>";
+            } else {
+                $result .= view($location, $array);
+            }
         }
     }
 

@@ -162,16 +162,17 @@ Part of the OpenEnergyMonitor project: http://openenergymonitor.org
     // Build options table html
     var options_html = "";
     for (z in box_options) {
-      options_html += "<div class='input-prepend'><span class='add-on' style='width: 70px; text-align: right;'>"+box_options[z][1]+"</span>";
-      var type = box_options[z][2];
+      options_html += "<div class='input-prepend'><span class='add-on' style='width: 70px; text-align: right;'>"+box_options[z]['name']+"</span>";
+      var type = box_options[z]['type'];
 
-      if (type == 0 || type == 1 || type == 2 || type == 3) {
-        options_html += select_feed(box_options[z][0], feedlist, type);
+      if (type == "feed") {
+        options_html += select_feed(z, feedlist, type);
       } else {
-        if (box_options[z][0] == "colour")  {
-          options_html += "<input type='color' class='options' id='"+box_options[z][0]+"' value='#"+box_options[z][3]+"'>";
+        // change this to use type variable rather than name
+        if (box_options[z]['name'] == "colour")  {
+          options_html += "<input type='color' class='options' id='"+z+"' value='#"+box_options[z]['default']+"'>";
         } else {
-          options_html += "<input type='text' class='options' id='"+box_options[z][0]+"' value='"+box_options[z][3]+"'>";
+          options_html += "<input type='text' class='options' id='"+z+"' value='"+box_options[z]['default']+"'>";
         }
       }
       options_html += "</div>";
@@ -185,13 +186,13 @@ Part of the OpenEnergyMonitor project: http://openenergymonitor.org
   function select_feed(id, feedlist, type) {
     var feedgroups = [];
     for (z in feedlist) {
-      if (feedlist[z].datatype == type || (type == 0 && (feedlist[z].datatype == 1 || feedlist[z].datatype == 2))) {
+      //if (feedlist[z].datatype == type || (type == 0 && (feedlist[z].datatype == 1 || feedlist[z].datatype == 2))) {
         var group = (feedlist[z].tag === null ? "NoGroup" : feedlist[z].tag);
         if (group!="Deleted") {
           if (!feedgroups[group]) feedgroups[group] = []
           feedgroups[group].push(feedlist[z]);
         }
-      }
+      //}
     }
     var out = "<select id='"+id+"' class='options' otype='feed'>";
     for (z in feedgroups) {
